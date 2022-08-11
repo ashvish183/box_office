@@ -1,58 +1,87 @@
-import React, { useState } from 'react'
-import ActorGrid from '../components/actors/ActorGrid'
-import MainPageLayout from '../components/MainPageLayout'
-import ShowGrid from '../components/shows/ShowGrid'
-import { apiGet } from '../misc/config'
+import React, { useCallback, useState } from "react";
+import ActorGrid from "../components/actors/ActorGrid";
+import CustomRadio from "../components/CustomRadio";
+import MainPageLayout from "../components/MainPageLayout";
+import ShowGrid from "../components/shows/ShowGrid";
+import { apiGet } from "../misc/config";
+import { useLastQuery } from "../misc/custom-hooks";
+import { RadioInputsWrapper, SearchButtonWrapper, SearchInput } from "./Home.styled";
+
+const renderResults = (results) => {
+  if (results && results.length === 0) {
+    return <div>No results</div>;
+  }
+
+  if (results && results.length > 0) {
+    return results[0].show ? (
+      <ShowGrid data={results} />
+    ) : (
+      <ActorGrid data={results} />
+    );
+  }
+
+  return null;
+};
 
 const Home = () => {
-    const [input,setInput]=useState("")
-    const [results,setResults]=useState(null)
-    const [searchOption,setOption]=useState("shows")
-    const isShows=(searchOption==='shows')
-    const  onInputChange=(event)=>{
-        setInput(event.target.value)
+  const [input, setInput] = useLastQuery();
+  const [results, setResults] = useState(null);
+  const [searchOption, setOption] = useState("shows");
+  const isShows = searchOption === "shows";
+  const onInputChange = useCallback((event) => {
+    setInput(event.target.value);
+  },[setInput])
+  const onSearch = () => {
+    apiGet(`/search/${searchOption}?q=${input}`).then((result) => {
+      setResults(result);
+    });
+  };
+  const onEnter = (ev) => {
+    if (ev.keyCode === 13) {
+      onSearch();
     }
-    const onSearch=()=>{
-        apiGet(`/search/${searchOption}?q=${input}`).then((result)=>{
-            setResults(result)
-        })
-    }
-    const onEnter=(ev)=>{
-        if(ev.keyCode===13){
-            onSearch();
-        }
-    }
-    const render=()=>{
-        if(!results)return null;
-        if(results&&results.length===0)return <div>No results found</div>
-        return (
-        <div>
-            {isShows?<ShowGrid data={results}/>:<ActorGrid data={results}/>}
-        </div>
-        );
-    }
-    const onRadioChange=(ev)=>{
-        setOption(ev.target.value)
-    }
+  };
+
+  const onRadioChange = useCallback((ev) => {
+    setOption(ev.target.value);
+  },[])
   return (
     <MainPageLayout>
-        <input type="text" onChange={onInputChange} value={input} onKeyDown={onEnter} placeholder="Search for Something"></input>
+      <SearchInput
+        type="text"
+        onChange={onInputChange}
+        value={input}
+        onKeyDown={onEnter}
+        placeholder="Search for Something"
+      />
+      <RadioInputsWrapper>
         <div>
-            <label htmlFor='shows-search'>
-                shows
-                <input id="shows-search" type="radio" value="shows" checked={isShows} onChange={onRadioChange}></input>
-            </label>
-            <label htmlFor='actors-search'>
-                Actors
-                <input id="actors-search" type="radio" value="people" checked={!isShows} onChange={onRadioChange}></input>
-            </label>
+            <CustomRadio
+                label='Shows'
+                id="shows-search"
+                value="shows"
+                checked={isShows}
+                onChange={onRadioChange}
+            />
         </div>
-        <button type="button" onClick={onSearch}>Search</button>
         <div>
-        {render()}
+            <CustomRadio
+                label='Actors'
+                id="actors-search"
+                value="people"
+                checked={!isShows}
+                onChange={onRadioChange}
+            />
         </div>
+      </RadioInputsWrapper>
+      <SearchButtonWrapper>
+      <button type="button" onClick={onSearch}>
+        Search
+      </button>
+      </SearchButtonWrapper>
+      <div>{renderResults(results)}</div>
     </MainPageLayout>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

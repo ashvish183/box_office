@@ -1,52 +1,19 @@
 import React from 'react'
-import { useEffect,useReducer } from 'react';
+// import { useEffect,useReducer } from 'react';
 import { useParams } from 'react-router-dom'
 import Cast from '../components/shows/Cast';
 import Details from '../components/shows/Details';
 import Seasons from '../components/shows/Seasons';
 import ShowMainData from '../components/shows/ShowMainData';
-import { apiGet } from '../misc/config';
+// import { apiGet } from '../misc/config';
 import { InfoBlock, ShowPageWrapper } from './Show.styled';
-const initialState={
-    show:null,
-    isLoading:true,
-    error:null
-}
-const reducer=(prevState,action)=>{
-    switch(action.type){
-        case 'FETCH_SUCCESS':
-            return{show:action.show,isLoading:false,error:null}
-        case 'FETCH_FAILED':
-            return{...prevState,error:action.error,isLoading:false}
-        default: return prevState
-    }
+import {useShow} from "../misc/custom-hooks"
 
-}
 const Pages = () => {
 
     // let isMounted=true
     const {id}=useParams();
-    const [{show,isLoading,error},dispatch]=useReducer(reducer,initialState)
-    // const [show,setShow]=useState(null)
-    // const [isLoading,setLoading]=useState(true)
-    // const [error,setError]=useState(null)
-    useEffect(()=>{
-        apiGet(`/shows/${id}?embed[]=seasons&embed[]=cast`).then((result)=>{
-            // if(isMounted){
-                dispatch({type:'FETCH_SUCCESS',show:result})
-            // }
-            
-        }).catch((err)=>{
-            // if(isMounted){
-                dispatch({type:'FETCH_FAILED',error:err.message})
-            // }
-        })
-        // return (()=>{
-        //     console.log("end")
-        //     isMounted=false;
-        // });
-    },[id]);
-    console.log(show);
+    const {show,isLoading,error}=useShow(id)
     if(isLoading){
         return<div>your data is being loaded</div>
     }

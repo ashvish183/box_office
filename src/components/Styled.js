@@ -1,10 +1,9 @@
 import styled from "styled-components";
-
-export const FlexGrid=styled.div`
+import FadeIn from 'react-fade-in';
+export const FlexGrid=styled(FadeIn)`
     display:flex;
-    justify-conent:center;
+    justify-content:center;
     flex-wrap:wrap;
-
 `
 export const SearchCard = styled.div`
   width: 300px;
@@ -40,7 +39,9 @@ export const Star = styled.div`
   display: inline-block;
   width: 18px;
   height: 18px;
-  background-color: #ffc806;
+  background-color:${(props)=>{
+    return props.active?'#ffc806':'#ddd'
+  }};
   clip-path: polygon(
     50% 0%,
     61% 35%,
